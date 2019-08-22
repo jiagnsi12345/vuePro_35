@@ -10,13 +10,14 @@
           <el-input type="password" v-model="loginFrom.password" placeholder="请输入密码" prefix-icon="myicon-key"></el-input>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" class='login-btn'>登录</el-button>
+          <el-button type="primary" class='login-btn' @click="login">登录</el-button>
         </el-form-item>
       </el-form>
     </div>
   </div>
 </template>
 <script>
+import { logins } from '@/api/login_index.js'
 export default {
   data () {
     return {
@@ -32,6 +33,35 @@ export default {
           { required: true, message: '请输入请输入密码', trigger: 'blur' }
         ]
       }
+    }
+  },
+  methods: {
+    login () {
+      this.$refs.loginForm.validate((value) => {
+        if (value) {
+          logins(this.loginFrom)
+            .then((res) => {
+              if (res.data.meta.status === 200) {
+                // 实现路由跳转
+              } else {
+                this.$message({
+                  message: res.data.meta.msg,
+                  type: 'warning'
+                })
+              }
+            })
+            .catch(() => {
+              this.$message({
+                message: '服务器异常请稍后再试',
+                type: 'warning'
+              })
+            }
+            )
+        } else {
+          this.$message.error('请输入所有必填数据')
+          return false
+        }
+      })
     }
   }
 }
