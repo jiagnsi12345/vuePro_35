@@ -43,6 +43,8 @@ export default {
             .then((res) => {
               if (res.data.meta.status === 200) {
                 // 实现路由跳转
+                localStorage.setItem('itcast_manager_35_token', res.data.data.token)
+                this.$router.push({ name: 'home' })
               } else {
                 this.$message({
                   message: res.data.meta.msg,

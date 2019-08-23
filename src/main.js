@@ -10,6 +10,15 @@ Vue.config.productionTip = false
 
 Vue.use(ElementUI)
 
+router.beforeEach((to, from, next) => {
+  let mytoken = localStorage.getItem('itcast_manager_35_token')
+  if(mytoken||to.path==='/login'){
+    next()
+  }else{
+    next({path:'/login'})
+  }
+}
+
 new Vue({
   router,
   render: h => h(App)
