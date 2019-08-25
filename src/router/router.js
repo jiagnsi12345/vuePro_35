@@ -4,7 +4,9 @@ import VueRouter from 'vue-router'
 // eslint-disable-next-line import/no-duplicates
 import login from '@/view/login.vue'
 // eslint-disable-next-line import/no-duplicates
-import home from '@/view/login.vue'
+import home from '@/view/home.vue'
+import welcome from '@/view/welcome.vue'
+import userlist from '@/view/user/users.vue'
 Vue.use(VueRouter)
 
 export default new VueRouter({
@@ -22,7 +24,20 @@ export default new VueRouter({
     {
       name: 'home',
       path: '/home',
-      component: home
+      component: home,
+      redirect: { name: 'welcome' },
+      children: [
+        {
+          name: 'welcome',
+          path: 'welcome',
+          component: welcome
+        },
+        {
+          name: 'userlist',
+          path: 'userlist',
+          component: userlist
+        }
+      ]
     }
   ]
 })

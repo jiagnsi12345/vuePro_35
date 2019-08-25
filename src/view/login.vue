@@ -2,12 +2,12 @@
   <div class="login">
     <div class="container">
         <img  class="avatar" src="../assets/avatar.jpg" alt="">
-      <el-form :model="loginFrom" :rules="rules" ref="loginForm"  class="demo-ruleForm">
+      <el-form :model="loginForm" :rules="rules" ref="loginForm"  class="demo-ruleForm">
         <el-form-item prop="username">
-          <el-input v-model="loginFrom.username" placeholder="请输入用户名" prefix-icon="myicon-user"></el-input>
+          <el-input v-model="loginForm.username" placeholder="请输入用户名" prefix-icon="myicon-user"></el-input>
         </el-form-item>
         <el-form-item prop="password">
-          <el-input type="password" v-model="loginFrom.password" placeholder="请输入密码" prefix-icon="myicon-key"></el-input>
+          <el-input type="password" v-model="loginForm.password" placeholder="请输入密码" prefix-icon="myicon-key"></el-input>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" class='login-btn' @click="login">登录</el-button>
@@ -21,7 +21,7 @@ import { logins } from '@/api/login_index.js'
 export default {
   data () {
     return {
-      loginFrom: {
+      loginForm: {
         username: '',
         password: ''
       },
@@ -39,7 +39,7 @@ export default {
     login () {
       this.$refs.loginForm.validate((value) => {
         if (value) {
-          logins(this.loginFrom)
+          logins(this.loginForm)
             .then((res) => {
               if (res.data.meta.status === 200) {
                 // 实现路由跳转
