@@ -8,14 +8,14 @@
     </el-breadcrumb>
     <!-- 搜索区域 -->
     <div style="margin-top: 15px; margin-bottom:15px">
-      <el-input placeholder="请输入内容" v-model="userkey" class="input-with-select" style="width:300px">
+      <el-input placeholder="请输入内容" v-model="userobj.query" class="input-with-select" style="width:300px">
         <el-button slot="append" icon="el-icon-search"></el-button>
       </el-input>
       <el-button type="success" style="margin-left:15px">添加用户</el-button>
     </div>
 
     <!-- 表格展示区域 -->
-    <el-table :data="tableData" style="width: 100% " border>
+    <el-table :data="userlists" style="width: 100% " border>
       <el-table-column width="50" type="index"></el-table-column>
       <el-table-column prop="date" label="日期" width="180"></el-table-column>
       <el-table-column prop="name" label="姓名" width="180"></el-table-column>
@@ -45,34 +45,36 @@
   </div>
 </template>
 <script>
+import { getAllUsers } from '@/api/user_index.js'
 export default {
   data () {
     return {
       userkey: '',
       status: true,
-      tableData: [
-        {
-          date: '2016-05-02',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-04',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1517 弄'
-        },
-        {
-          date: '2016-05-01',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1519 弄'
-        },
-        {
-          date: '2016-05-03',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1516 弄'
-        }
-      ]
+      userlists: [
+
+      ],
+      userobj: {
+        query: '',
+        pagenum: 1,
+        pagesize: 2
+      }
     }
+  },
+  mounted () {
+    getAllUsers(this.userobj)
+      .then(res => {
+        console.log(res)
+        if (res.data.meta.status === 200) {
+          this.userlists = res.data.data.users
+        } else if (res.data.meta.status === 400) {
+          this.$massage.error(res.data.meta.msg)
+          this.$router.push({ name: 'login' })
+        }
+      })
+      .catch(err => {
+        console.log(err)
+      })
   }
 }
 </script>
