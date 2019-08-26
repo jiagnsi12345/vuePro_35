@@ -11,7 +11,7 @@
       <el-input placeholder="请输入内容" @keypress.enter.native='init' v-model="userobj.query" class="input-with-select" style="width:300px">
         <el-button slot="append" icon="el-icon-search" @click='init'></el-button>
       </el-input>
-      <el-button type="success" style="margin-left:15px">添加用户</el-button>
+      <el-button type="success" style="margin-left:15px" @click='addDialogFormVisible=true'>添加用户</el-button>
     </div>
 
     <!-- 表格展示区域 -->
@@ -51,10 +51,32 @@
       layout="total, sizes, prev, pager, next, jumper"
       :total="total">
     </el-pagination>
+
+    <!-- 添加用户弹出框 -->
+<el-dialog title="添加用户" :visible.sync="addDialogFormVisible">
+  <el-form :model="addForm" :label-width='"80px"' :rules="rules" ref="addForm">
+    <el-form-item label="用户名" prop="username">
+      <el-input v-model="addForm.username" autocomplete="off"></el-input>
+    </el-form-item>
+     <el-form-item label="密码"  prop="password">
+      <el-input v-model="addForm.password" autocomplete="off"></el-input>
+    </el-form-item>
+     <el-form-item label="邮箱" prop="email" >
+      <el-input v-model="addForm.email" autocomplete="off"></el-input>
+    </el-form-item>
+     <el-form-item label="手机号" prop="mobile">
+      <el-input v-model="addForm.mobile" autocomplete="off"></el-input>
+    </el-form-item>
+  </el-form>
+  <div slot="footer" class="dialog-footer">
+    <el-button @click="addDialogFormVisible = false" >取 消</el-button>
+    <el-button type="primary" @click="add">确 定</el-button>
+  </div>
+</el-dialog>
   </div>
 </template>
 <script>
-import { getAllUsers } from '@/api/user_index.js'
+import { getAllUsers, addUser } from '@/api/user_index.js'
 
 export default {
   data () {
@@ -69,7 +91,29 @@ export default {
         query: '',
         pagenum: 1,
         pagesize: 2
+      },
+      addDialogFormVisible: false,
+      addForm: {
+        username: '',
+        password: '',
+        email: '',
+        mobile: ''
+      },
+      rules: {
+        username: [
+          { required: true, message: '请输入用户名', trigger: 'blur' }
+        ],
+        password: [
+          { required: true, message: '请输入密码', trigger: 'blur' }
+        ],
+        email: [
+          { required: true, message: '请输入邮箱', trigger: 'blur' }
+        ],
+        mobile: [
+          { required: true, message: '请输入手机号', trigger: 'blur' }
+        ]
       }
+
     }
   },
   methods: {
@@ -81,7 +125,7 @@ export default {
             this.userlists = res.data.data.users
             this.total = res.data.data.total
           } else if (res.data.meta.status === 400) {
-            this.$massage.error(res.data.meta.msg)
+            this.$message.error(res.data.meta.msg)
             this.$router.push({ name: 'login' })
           }
         })
@@ -97,8 +141,30 @@ export default {
       console.log(val)
       this.userobj.pagenum = val
       this.init()
+    },
+    add () {
+      this.$refs.addForm.validate(valid => {
+        if (valid) {
+          addUser(this.addForm)
+            .then(res => {
+              console.log(res)
+              if (res.data.meta.status === 201) {
+                this.$message.success('添加用户成功')
+                this.init()
+                this.addDialogFormVisible = false
+                // 清空表单元素的数据--重置表单元素
+                this.$refs.addForm.resetFields()
+              }
+            })
+            .catch(err => {
+              console.log(err)
+              this.$message.success('用户新增失败')
+            })
+        } else {
+          this.$message.warning('请输入所有必填数据')
+        }
+      })
     }
-
   },
 
   mounted () {
