@@ -8,8 +8,8 @@
     </el-breadcrumb>
     <!-- 搜索区域 -->
     <div style="margin-top: 15px; margin-bottom:15px">
-      <el-input placeholder="请输入内容" v-model="userobj.query" class="input-with-select" style="width:300px">
-        <el-button slot="append" icon="el-icon-search"></el-button>
+      <el-input placeholder="请输入内容" @keypress.enter.native='init' v-model="userobj.query" class="input-with-select" style="width:300px">
+        <el-button slot="append" icon="el-icon-search" @click='init'></el-button>
       </el-input>
       <el-button type="success" style="margin-left:15px">添加用户</el-button>
     </div>
@@ -17,12 +17,12 @@
     <!-- 表格展示区域 -->
     <el-table :data="userlists" style="width: 100% " border>
       <el-table-column width="50" type="index"></el-table-column>
-      <el-table-column prop="date" label="日期" width="180"></el-table-column>
-      <el-table-column prop="name" label="姓名" width="180"></el-table-column>
-      <el-table-column prop="address" label="地址"></el-table-column>
+      <el-table-column prop="username" label="姓名" width="180"></el-table-column>
+      <el-table-column prop="email" label="邮箱" width="180"></el-table-column>
+      <el-table-column prop="mobile" label="电话"></el-table-column>
       <el-table-column label="状态" width="100">
-        <template>
-          <el-switch v-model="status" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
+        <template slot-scope="scope">
+          <el-switch v-model="scope.row.mg_state" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
         </template>
       </el-table-column>
       <el-table-column label="操作">
@@ -42,13 +42,24 @@
       </el-table-column>
     </el-table>
     <!-- 分页区域 -->
+    <el-pagination
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
+      :current-page="userobj.pagenum"
+      :page-sizes="[1,2,3,5]"
+      :page-size="userobj.pagesize"
+      layout="total, sizes, prev, pager, next, jumper"
+      :total="total">
+    </el-pagination>
   </div>
 </template>
 <script>
 import { getAllUsers } from '@/api/user_index.js'
+
 export default {
   data () {
     return {
+      total: 0,
       userkey: '',
       status: true,
       userlists: [
@@ -61,20 +72,37 @@ export default {
       }
     }
   },
+  methods: {
+    init () {
+      getAllUsers(this.userobj)
+        .then(res => {
+          console.log(res)
+          if (res.data.meta.status === 200) {
+            this.userlists = res.data.data.users
+            this.total = res.data.data.total
+          } else if (res.data.meta.status === 400) {
+            this.$massage.error(res.data.meta.msg)
+            this.$router.push({ name: 'login' })
+          }
+        })
+        .catch(err => {
+          console.log(err)
+        })
+    },
+    handleSizeChange (val) {
+      console.log(val)
+      this.userobj.pagesize = val
+    },
+    handleCurrentChange (val) {
+      console.log(val)
+      this.userobj.pagenum = val
+      this.init()
+    }
+
+  },
+
   mounted () {
-    getAllUsers(this.userobj)
-      .then(res => {
-        console.log(res)
-        if (res.data.meta.status === 200) {
-          this.userlists = res.data.data.users
-        } else if (res.data.meta.status === 400) {
-          this.$massage.error(res.data.meta.msg)
-          this.$router.push({ name: 'login' })
-        }
-      })
-      .catch(err => {
-        console.log(err)
-      })
+    this.init()
   }
 }
 </script>
