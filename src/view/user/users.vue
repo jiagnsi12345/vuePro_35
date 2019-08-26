@@ -8,10 +8,16 @@
     </el-breadcrumb>
     <!-- 搜索区域 -->
     <div style="margin-top: 15px; margin-bottom:15px">
-      <el-input placeholder="请输入内容" @keypress.enter.native='init' v-model="userobj.query" class="input-with-select" style="width:300px">
-        <el-button slot="append" icon="el-icon-search" @click='init'></el-button>
+      <el-input
+        placeholder="请输入内容"
+        @keypress.enter.native="init"
+        v-model="userobj.query"
+        class="input-with-select"
+        style="width:300px"
+      >
+        <el-button slot="append" icon="el-icon-search" @click="init"></el-button>
       </el-input>
-      <el-button type="success" style="margin-left:15px" @click='addDialogFormVisible=true'>添加用户</el-button>
+      <el-button type="success" style="margin-left:15px" @click="addDialogFormVisible=true">添加用户</el-button>
     </div>
 
     <!-- 表格展示区域 -->
@@ -28,7 +34,7 @@
       <el-table-column label="操作">
         <template slot-scope="scope">
           <el-tooltip class="item" effect="dark" content="编辑" placement="top">
-            <el-button type="primary" icon="el-icon-edit"></el-button>
+            <el-button type="primary" icon="el-icon-edit" @click="showEditDialog(scope.row)"></el-button>
           </el-tooltip>
 
           <el-tooltip class="item" effect="dark" content="分配角色" placement="top">
@@ -49,34 +55,54 @@
       :page-sizes="[1,2,3,5]"
       :page-size="userobj.pagesize"
       layout="total, sizes, prev, pager, next, jumper"
-      :total="total">
-    </el-pagination>
+      :total="total"
+    ></el-pagination>
 
     <!-- 添加用户弹出框 -->
-<el-dialog title="添加用户" :visible.sync="addDialogFormVisible">
-  <el-form :model="addForm" :label-width='"80px"' :rules="rules" ref="addForm">
-    <el-form-item label="用户名" prop="username">
-      <el-input v-model="addForm.username" autocomplete="off"></el-input>
-    </el-form-item>
-     <el-form-item label="密码"  prop="password">
-      <el-input v-model="addForm.password" autocomplete="off"></el-input>
-    </el-form-item>
-     <el-form-item label="邮箱" prop="email" >
-      <el-input v-model="addForm.email" autocomplete="off"></el-input>
-    </el-form-item>
-     <el-form-item label="手机号" prop="mobile">
-      <el-input v-model="addForm.mobile" autocomplete="off"></el-input>
-    </el-form-item>
-  </el-form>
-  <div slot="footer" class="dialog-footer">
-    <el-button @click="addDialogFormVisible = false" >取 消</el-button>
-    <el-button type="primary" @click="add">确 定</el-button>
-  </div>
-</el-dialog>
+    <el-dialog title="添加用户" :visible.sync="addDialogFormVisible">
+      <el-form :model="addForm" :label-width="'80px'" :rules="rules" ref="addForm">
+        <el-form-item label="用户名" prop="username">
+          <el-input v-model="addForm.username" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="密码" prop="password">
+          <el-input v-model="addForm.password" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="邮箱" prop="email">
+          <el-input v-model="addForm.email" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="手机号" prop="mobile">
+          <el-input v-model="addForm.mobile" autocomplete="off"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="addDialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="add">确 定</el-button>
+      </div>
+    </el-dialog>
+
+    <!-- 建立编辑弹框 -->
+    <el-dialog title="编辑用户" :visible.sync="editDialogFormVisible">
+      <el-form :model="editForm" :label-width="'80px'" :rules="rules" ref="editForm">
+        <el-form-item label="用户名">
+          <el-input v-model="editForm.username" autocomplete="off" disabled style="width:100px"></el-input>
+        </el-form-item>
+        <el-form-item label="邮箱" prop="email">
+          <el-input v-model="editForm.email" autocomplete="off"></el-input>
+        </el-form-item>
+
+        <el-form-item label="手机" prop="mobile">
+          <el-input v-model="editForm.mobile" autocomplete="off"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="editDialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="edituser">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 <script>
-import { getAllUsers, addUser } from '@/api/user_index.js'
+import { getAllUsers, addUser, editUser } from '@/api/user_index.js'
 
 export default {
   data () {
@@ -84,15 +110,14 @@ export default {
       total: 0,
       userkey: '',
       status: true,
-      userlists: [
-
-      ],
+      userlists: [],
       userobj: {
         query: '',
         pagenum: 1,
         pagesize: 2
       },
       addDialogFormVisible: false,
+      editDialogFormVisible: false,
       addForm: {
         username: '',
         password: '',
@@ -103,24 +128,23 @@ export default {
         username: [
           { required: true, message: '请输入用户名', trigger: 'blur' }
         ],
-        password: [
-          { required: true, message: '请输入密码', trigger: 'blur' }
-        ],
-        email: [
-          { required: true, message: '请输入邮箱', trigger: 'blur' }
-        ],
-        mobile: [
-          { required: true, message: '请输入手机号', trigger: 'blur' }
-        ]
+        password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+        email: [{ required: true, message: '请输入邮箱', trigger: 'blur' }],
+        mobile: [{ required: true, message: '请输入手机号', trigger: 'blur' }]
+      },
+      editForm: {
+        id: '',
+        username: '',
+        mobile: '',
+        email: ''
       }
-
     }
   },
   methods: {
     init () {
       getAllUsers(this.userobj)
         .then(res => {
-          console.log(res)
+          // console.log(res)
           if (res.data.meta.status === 200) {
             this.userlists = res.data.data.users
             this.total = res.data.data.total
@@ -134,11 +158,11 @@ export default {
         })
     },
     handleSizeChange (val) {
-      console.log(val)
+      // console.log(val)
       this.userobj.pagesize = val
     },
     handleCurrentChange (val) {
-      console.log(val)
+      // console.log(val)
       this.userobj.pagenum = val
       this.init()
     },
@@ -147,7 +171,7 @@ export default {
         if (valid) {
           addUser(this.addForm)
             .then(res => {
-              console.log(res)
+              // console.log(res)
               if (res.data.meta.status === 201) {
                 this.$message.success('添加用户成功')
                 this.init()
@@ -164,7 +188,31 @@ export default {
           this.$message.warning('请输入所有必填数据')
         }
       })
+    },
+    showEditDialog (row) {
+      this.editDialogFormVisible = true
+      this.editForm.id = row.id
+      this.editForm.username = row.role_name
+      this.editForm.email = row.email
+      this.editForm.mobile = row.mobile
+    },
+    edituser () {
+      editUser(this.editForm)
+        .then((res) => {
+          if (res.data.meta.status === 200) {
+            this.$message.success('用户编辑数据成功')
+            this.init()
+            this.editDialogFormVisible = false
+            this.$refs.editForm.resetFields()
+          }
+        })
+        .catch(err => {
+          console.log(err)
+          this.$message.success('用户新增失败')
+        })
+       
     }
+
   },
 
   mounted () {
