@@ -18,10 +18,19 @@ export const addUser = (data) => {
 
 // 用户数据得编辑
 
-export const editUser = (data) => {
+export const ditUser = (data) => {
   return axios({
     url: `users/${data.id}`,
     method: 'put',
     data
+  })
+}
+
+// 角色分配编辑
+export const grantUserRloe = (data) => {
+  return axios({
+    url: `users/${data.id}/role`,
+    method: 'put',
+    data: { rid: data.rid }
   })
 }
