@@ -28,7 +28,7 @@
       <el-table-column prop="mobile" label="电话"></el-table-column>
       <el-table-column label="状态" width="100">
         <template slot-scope="scope">
-          <el-switch v-model="scope.row.mg_state" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
+          <el-switch v-model="scope.row.mg_state" active-color="#13ce66" inactive-color="#ff4949" @change="changeState(scope.row.id,scope.row.mg_state)"></el-switch>
         </template>
       </el-table-column>
       <el-table-column label="操作">
@@ -42,7 +42,7 @@
           </el-tooltip>
 
           <el-tooltip class="item" effect="dark" content="删除" placement="top">
-            <el-button type="warning" icon="el-icon-delete"></el-button>
+            <el-button type="warning" icon="el-icon-delete" @click="deluser(scope.row.id)"></el-button>
           </el-tooltip>
         </template>
       </el-table-column>
@@ -124,6 +124,7 @@
         <el-button type="primary" @click="grantUser">确 定</el-button>
       </div>
     </el-dialog>
+
   </div>
 </template>
 <script>
@@ -131,7 +132,9 @@ import {
   getAllUsers,
   addUser,
   editUser,
-  grantUserRloe
+  grantUserRloe,
+  delUserById,
+  updateUserState
 } from '@/api/user_index.js'
 import { getAllRoleList } from '@/api/role_index.js'
 
@@ -279,9 +282,59 @@ export default {
       this.grantForm.username = row.username
       this.grantForm.id = row.id
       this.grantForm.rid = row.rid
+    },
+    deluser (id) {
+      this.$confirm('此操作将永久删除该用户, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then((res) => {
+        delUserById(id)
+          .then((res) => {
+            if (res.data.meta.status === 200) {
+              this.$message({
+                type: 'success',
+                message: res.data.meta.msg
+              })
+              this.init()
+            } else {
+              this.$message({
+                type: 'error',
+                message: res.data.meta.msg
+              })
+            }
+          })
+      })
+        .catch(() => {
+          this.$message({
+            type: 'error',
+            message: '删除失败'
+          })
+        })
+        .catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消删除'
+          })
+        })
+    },
+    changeState (id, type) {
+      console.log(id, type)
+      updateUserState(id, type)
+        .then((res) => {
+          if (res.data.meta.status === 200) {
+            this.$message.success(res.data.meta.msg)
+          }
+        })
+        // eslint-disable-next-line handle-callback-err
+        .catch((err) => {
+          this.$message({
+            type: 'error',
+            message: '修改状态失败'
+          })
+        })
     }
   },
-
   mounted () {
     this.init()
     getAllRoleList()
