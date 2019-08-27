@@ -6,8 +6,8 @@ import login from '@/view/login.vue'
 // eslint-disable-next-line import/no-duplicates
 import home from '@/view/home.vue'
 import welcome from '@/view/welcome.vue'
-import user from '@/view/user/users.vue'
-import rightList from '@/view/rights/rightList'
+import userlist from '@/view/user/users.vue'
+import rightList from '@/view/rights/PermissionsList.vue'
 import roleList from '@/view/rights/roleList.vue'
 Vue.use(VueRouter)
 
@@ -35,9 +35,9 @@ export default new VueRouter({
           component: welcome
         },
         {
-          name: 'user',
-          path: 'user',
-          component: user
+          name: 'userlist',
+          path: 'userlist',
+          component: userlist
         },
         {
           name: 'rights',

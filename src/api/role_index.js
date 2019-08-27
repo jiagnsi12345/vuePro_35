@@ -3,6 +3,5 @@ import axios from '@/utils/myaxios.js'
 export const getAllRoleList = () => {
   return axios({
     url: 'roles'
-
   })
 }
