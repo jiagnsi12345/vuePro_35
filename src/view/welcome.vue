@@ -1,5 +1,5 @@
 <template>
-    <div class="welcome" style='color:"black"'>
+    <div class="welcome" style='color:black'>
         欢迎您使用后台管理系统
     </div>
 </template>
@@ -7,3 +7,4 @@
 export default {
 }
 </script>
+
