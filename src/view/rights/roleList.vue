@@ -15,15 +15,15 @@
         <template slot-scope="scope">
             <el-row v-for="first in scope.row.children" :key="first.id" style="margin-bottom:15px">
               <el-col :span="4">
-                <el-tag  closable :type="'success'">{{first.authName}}</el-tag>
+                <el-tag  closable :type="'success'" @close='delRight(scope.row,first.id)'>{{first.authName}}</el-tag>
               </el-col>
               <el-col :span="20">
                 <el-row v-for="second in first.children" :key="second.id" style="margin-bottom:10px">
                   <el-col :span="4">
-                    <el-tag  closable :type="'info'">{{second.authName}}</el-tag>
+                    <el-tag  closable :type="'info'" @close='delRight(scope.row,second.id)'>{{second.authName}}</el-tag>
                   </el-col>
                   <el-col :span="20"  >
-                    <el-tag  closable :type="'error'" v-for="third in second.children" :key="third.id" style="margin-right:5px;margin-bottom:5px">{{third.authName}}</el-tag>
+                    <el-tag  closable :type="'error'" @close='delRight(scope.row,third.id)' v-for="third in second.children" :key="third.id" style="margin-right:5px;margin-bottom:5px">{{third.authName}}</el-tag>
                   </el-col>
                 </el-row>
               </el-col>
@@ -51,7 +51,7 @@
   </div>
 </template>
 <script>
-import { getAllRoleList } from '@/api/role_index.js'
+import { getAllRoleList, delRightsByRoleId } from '@/api/role_index.js'
 export default {
   data () {
     return {
@@ -59,16 +59,33 @@ export default {
     }
   },
   mounted () {
-    getAllRoleList()
-      .then(res => {
-        if (res.data.meta.status === 200) {
-          this.roleList = res.data.data
-        }
-      })
+    this.init()
+  },
+  methods: {
+    delRight (row, rightId) {
+      delRightsByRoleId(row.id, rightId)
+        .then((res) => {
+          console.log(res)
+          if (res.data.meta.status === 200) {
+            row.children = res.data.data
+          }
+        })
+        .catch((err) => {
+          console.log(err)
+        })
+    },
+    init () {
+      getAllRoleList()
+        .then(res => {
+          if (res.data.meta.status === 200) {
+            this.roleList = res.data.data
+          }
+        })
       // eslint-disable-next-line handle-callback-err
-      .catch(err => {
-        this.$message.success('角色列表展示失败')
-      })
+        .catch(err => {
+          this.$message.success('角色列表展示失败')
+        })
+    }
   }
 }
 </script>
