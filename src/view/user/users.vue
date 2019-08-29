@@ -52,7 +52,7 @@
       @size-change="handleSizeChange"
       @current-change="handleCurrentChange"
       :current-page="userobj.pagenum"
-      :page-sizes="[1,2,3,5]"
+      :page-sizes="[1,2,3,4,5]"
       :page-size="userobj.pagesize"
       layout="total, sizes, prev, pager, next, jumper"
       :total="total"
@@ -149,7 +149,7 @@ export default {
       userobj: {
         query: '',
         pagenum: 1,
-        pagesize: 2
+        pagesize: 5
       },
       addDialogFormVisible: false,
       editDialogFormVisible: false,
@@ -201,6 +201,7 @@ export default {
     handleSizeChange (val) {
       // console.log(val)
       this.userobj.pagesize = val
+      this.init()
     },
     handleCurrentChange (val) {
       // console.log(val)
@@ -284,18 +285,20 @@ export default {
       this.grantForm.rid = row.rid
     },
     deluser (id) {
-      this.$confirm('此操作将永久删除该用户, 是否继续?', '提示', {
+      this.$confirm('此操作将永久删除该用户, 是否继续?', '删除提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
-      }).then((res) => {
+      }).then(() => {
         delUserById(id)
-          .then((res) => {
+          .then(res => {
+            console.log(res)
             if (res.data.meta.status === 200) {
               this.$message({
                 type: 'success',
-                message: res.data.meta.msg
+                message: '删除成功!'
               })
+              this.userobj.pagenum = Math.ceil((this.total - 1) / this.userobj.pagesize) < this.userobj.pagenum ? --this.userobj.pagenum : this.userobj.pagenum
               this.init()
             } else {
               this.$message({
@@ -304,19 +307,19 @@ export default {
               })
             }
           })
+          .catch((err) => {
+            console.log(err)
+            this.$message({
+              type: 'error',
+              message: '删除失败'
+            })
+          })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        })
       })
-        .catch(() => {
-          this.$message({
-            type: 'error',
-            message: '删除失败'
-          })
-        })
-        .catch(() => {
-          this.$message({
-            type: 'info',
-            message: '已取消删除'
-          })
-        })
     },
     changeState (id, type) {
       console.log(id, type)
