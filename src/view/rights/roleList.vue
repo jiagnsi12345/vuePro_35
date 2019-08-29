@@ -7,30 +7,45 @@
       <el-breadcrumb-item>角色列表</el-breadcrumb-item>
     </el-breadcrumb>
     <!-- 按钮 -->
-    <el-button type="primary" style="width:100%; margin-bottom:15px">成功按钮</el-button>
+    <el-button type="success" style="margin-bottom:15px">成功按钮</el-button>
     <!-- 表格展示 -->
     <el-table :data="roleList" border style="width: 100%">
       <!-- 展开行结构 -->
       <el-table-column type="expand">
         <template slot-scope="scope">
-            <el-row v-for="first in scope.row.children" :key="first.id" style="margin-bottom:15px">
-              <el-col :span="4">
-                <el-tag  closable :type="'success'" @close='delRight(scope.row,first.id)'>{{first.authName}}</el-tag>
-              </el-col>
-              <el-col :span="20">
-                <el-row v-for="second in first.children" :key="second.id" style="margin-bottom:10px">
-                  <el-col :span="4">
-                    <el-tag  closable :type="'info'" @close='delRight(scope.row,second.id)'>{{second.authName}}</el-tag>
-                  </el-col>
-                  <el-col :span="20"  >
-                    <el-tag  closable :type="'error'" @close='delRight(scope.row,third.id)' v-for="third in second.children" :key="third.id" style="margin-right:5px;margin-bottom:5px">{{third.authName}}</el-tag>
-                  </el-col>
-                </el-row>
-              </el-col>
-            </el-row>
-             <el-row >
-                 <el-col :span="24" v-show="scope.row.children.length === 0">还没有任何的权限,先分配!</el-col>
-             </el-row>
+          <el-row v-for="first in scope.row.children" :key="first.id" style="margin-bottom:15px">
+            <el-col :span="4">
+              <el-tag
+                closable
+                :type="'success'"
+                @close="delRight(scope.row,first.id)"
+              >{{first.authName}}</el-tag>
+            </el-col>
+            <el-col :span="20">
+              <el-row v-for="second in first.children" :key="second.id" style="margin-bottom:10px">
+                <el-col :span="4">
+                  <el-tag
+                    closable
+                    :type="'info'"
+                    @close="delRight(scope.row,second.id)"
+                  >{{second.authName}}</el-tag>
+                </el-col>
+                <el-col :span="20">
+                  <el-tag
+                    closable
+                    :type="'error'"
+                    @close="delRight(scope.row,third.id)"
+                    v-for="third in second.children"
+                    :key="third.id"
+                    style="margin-right:5px;margin-bottom:5px"
+                  >{{third.authName}}</el-tag>
+                </el-col>
+              </el-row>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="24" v-show="scope.row.children.length === 0">还没有任何的权限,先分配!</el-col>
+          </el-row>
         </template>
       </el-table-column>
       <el-table-column type="index" width="50"></el-table-column>
@@ -48,29 +63,54 @@
         </el-tooltip>
       </el-table-column>
     </el-table>
+
+    <!-- 角色授权弹出框 -->
+    <el-dialog title="权限分配" :visible.sync="grantdialogVisible">
+      <el-tree
+      :data="rightList"
+      show-checkbox
+      node-key="id"
+      :default-expand-all='true'
+      :default-checked-keys="chckedArr"
+      :props="defaultProps"
+    ></el-tree>
+    </el-dialog>
   </div>
 </template>
 <script>
 import { getAllRoleList, delRightsByRoleId } from '@/api/role_index.js'
+import { getAllRightlist } from '@/api/right_index.js'
 export default {
   data () {
     return {
-      roleList: []
+      roleList: [],
+      grantdialogVisible: true,
+      rightList: [],
+      chckedArr: [],
+      defaultProps: {
+        label: 'authName',
+        children: 'children'
+      }
     }
   },
   mounted () {
     this.init()
+    getAllRightlist('tree')
+      .then((res) => {
+        console.log(res)
+        this.rightList = res.data.data
+      })
   },
   methods: {
     delRight (row, rightId) {
       delRightsByRoleId(row.id, rightId)
-        .then((res) => {
+        .then(res => {
           console.log(res)
           if (res.data.meta.status === 200) {
             row.children = res.data.data
           }
         })
-        .catch((err) => {
+        .catch(err => {
           console.log(err)
         })
     },
@@ -81,7 +121,7 @@ export default {
             this.roleList = res.data.data
           }
         })
-      // eslint-disable-next-line handle-callback-err
+        // eslint-disable-next-line handle-callback-err
         .catch(err => {
           this.$message.success('角色列表展示失败')
         })

@@ -13,3 +13,6 @@ export const delRightsByRoleId = (roleId, rightId) => {
     method: 'delete'
   })
 }
+
+// 角色授权
+// export const
